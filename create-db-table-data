@@ -1,0 +1,104 @@
+Step 1: Create a Database
+sql
+-- Create a new database named Playground
+CREATE DATABASE Playground;
+Once created, make sure you use it:
+
+sql
+-- Switch to Playground database
+USE Playground;
+
+Step 2: Create Tables
+Let’s make a simple system:
+
+Students table (student info)
+
+Courses table (course details)
+
+Enrollments table (linking students to courses)
+
+-- Students table
+CREATE TABLE Students (
+    StudentID INT PRIMARY KEY IDENTITY(1,1),
+    FirstName VARCHAR(50) NOT NULL,
+    LastName VARCHAR(50) NOT NULL,
+    Email VARCHAR(100) UNIQUE,
+    DateOfBirth DATE,
+    EnrollmentDate DATE DEFAULT GETDATE()
+);
+
+-- Courses table
+CREATE TABLE Courses (
+    CourseID INT PRIMARY KEY IDENTITY(1,1),
+    CourseName VARCHAR(100) NOT NULL,
+    CourseCode VARCHAR(20) UNIQUE NOT NULL,
+    Credits INT DEFAULT 3
+);
+
+-- Enrollments table (junction table for many-to-many relationship)
+CREATE TABLE Enrollments (
+    EnrollmentID INT PRIMARY KEY IDENTITY(1,1),
+    StudentID INT FOREIGN KEY REFERENCES Students(StudentID),
+    CourseID INT FOREIGN KEY REFERENCES Courses(CourseID),
+    EnrollmentDate DATE DEFAULT GETDATE(),
+    Grade CHAR(2) NULL
+);
+
+Step 3: Insert Sample Data
+
+-- Insert into Students
+INSERT INTO Students (FirstName, LastName, Email, DateOfBirth)
+VALUES 
+('Alex', 'Turner', 'alex.turner@email.com', '2000-05-15'),
+('Jordan', 'Lee', 'jordan.lee@email.com', '1999-11-22'),
+('Casey', 'Smith', 'casey.smith@email.com', '2001-03-08');
+
+-- Insert into Courses
+INSERT INTO Courses (CourseName, CourseCode, Credits)
+VALUES
+('Introduction to Databases', 'DB101', 4),
+('Web Development Basics', 'WEB101', 3),
+('Data Analysis with SQL', 'SQL201', 4);
+
+-- Insert into Enrollments
+INSERT INTO Enrollments (StudentID, CourseID, Grade)
+VALUES
+(1, 1, 'A'),
+(1, 2, 'B+'),
+(2, 1, 'B'),
+(3, 3, 'A-');
+
+Step 4: Let's Run Some Basic Queries
+See all students:
+
+sql
+SELECT * FROM Students;
+See all courses:
+
+sql
+SELECT * FROM Courses;
+
+See enrollment details with student and course names:
+
+sql
+SELECT 
+    s.FirstName, 
+    s.LastName,
+    c.CourseName,
+    e.EnrollmentDate,
+    e.Grade
+FROM Enrollments e
+JOIN Students s ON e.StudentID = s.StudentID
+JOIN Courses c ON e.CourseID = c.CourseID;
+
+
+Count how many students are in each course:
+
+sql
+SELECT 
+    c.CourseName,
+    COUNT(e.StudentID) AS TotalStudents
+FROM Courses c
+LEFT JOIN Enrollments e ON c.CourseID = e.CourseID
+GROUP BY c.CourseName;
+
