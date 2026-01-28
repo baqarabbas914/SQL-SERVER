@@ -1,0 +1,124 @@
+Library Management System
+
+Step 1: Create Database
+
+CREATE DATABASE LibraryDB;
+USE LibraryDB;
+
+Step 2: Create Tables (3 Core Tables)
+
+-- 1. Members table (library users)
+CREATE TABLE Members (
+    MemberID INT PRIMARY KEY IDENTITY(1,1),
+    FirstName VARCHAR(50) NOT NULL,
+    LastName VARCHAR(50) NOT NULL,
+    Email VARCHAR(100) UNIQUE,
+    MembershipDate DATE DEFAULT GETDATE(),
+    IsActive BIT DEFAULT 1  -- 1 for active, 0 for inactive
+);
+
+-- 2. Books table
+CREATE TABLE Books (
+    BookID INT PRIMARY KEY IDENTITY(1,1),
+    Title VARCHAR(200) NOT NULL,
+    Author VARCHAR(100) NOT NULL,
+    ISBN VARCHAR(20) UNIQUE NOT NULL,
+    PublishedYear INT,
+    AvailableCopies INT DEFAULT 1
+);
+
+-- 3. Borrowings table (transactions)
+CREATE TABLE Borrowings (
+    BorrowID INT PRIMARY KEY IDENTITY(1,1),
+    MemberID INT FOREIGN KEY REFERENCES Members(MemberID),
+    BookID INT FOREIGN KEY REFERENCES Books(BookID),
+    BorrowDate DATE DEFAULT GETDATE(),
+    DueDate DATE,
+    ReturnDate DATE NULL,  -- NULL means not returned yet
+    CONSTRAINT CHK_DueDate CHECK (DueDate > BorrowDate)
+);
+
+Step 3: Insert Sample Data
+
+-- Insert Members
+INSERT INTO Members (FirstName, LastName, Email)
+VALUES 
+('Emma', 'Watson', 'emma.w@email.com'),
+('Michael', 'Scott', 'michael.s@email.com'),
+('Sarah', 'Johnson', 'sarah.j@email.com');
+
+-- Insert Books
+INSERT INTO Books (Title, Author, ISBN, PublishedYear, AvailableCopies)
+VALUES
+('The Great Gatsby', 'F. Scott Fitzgerald', '9780743273565', 1925, 3),
+('To Kill a Mockingbird', 'Harper Lee', '9780061120084', 1960, 2),
+('1984', 'George Orwell', '9780451524935', 1949, 1),
+('The Hobbit', 'J.R.R. Tolkien', '9780547928227', 1937, 4);
+
+-- Insert Borrowings
+INSERT INTO Borrowings (MemberID, BookID, DueDate)
+VALUES
+(1, 1, DATEADD(day, 14, GETDATE())),  -- Due in 14 days
+(2, 3, DATEADD(day, 14, GETDATE())),
+(1, 2, DATEADD(day, 7, GETDATE()));   -- Due in 7 days
+
+Step 4: Querying
+1. View all active members:
+
+SELECT * FROM Members WHERE IsActive = 1;
+
+2. Find available books:
+
+SELECT Title, Author, AvailableCopies 
+FROM Books 
+WHERE AvailableCopies > 0;
+
+3. Current borrowed books with member info:
+
+SELECT 
+    m.FirstName,
+    m.LastName,
+    b.Title,
+    br.BorrowDate,
+    br.DueDate
+FROM Borrowings br
+JOIN Members m ON br.MemberID = m.MemberID
+JOIN Books b ON br.BookID = b.BookID
+WHERE br.ReturnDate IS NULL;  -- Not returned yet
+
+4. Books due in next 3 days
+
+SELECT 
+    b.Title,
+    m.FirstName,
+    m.LastName,
+    m.Email,
+    br.DueDate
+FROM Borrowings br
+JOIN Books b ON br.BookID = b.BookID
+JOIN Members m ON br.MemberID = m.MemberID
+WHERE br.ReturnDate IS NULL 
+AND br.DueDate BETWEEN GETDATE() AND DATEADD(day, 3, GETDATE());
+
+5. Most popular books (borrowing count):
+
+SELECT 
+    b.Title,
+    b.Author,
+    COUNT(br.BorrowID) AS TimesBorrowed
+FROM Books b
+LEFT JOIN Borrowings br ON b.BookID = br.BookID
+GROUP BY b.Title, b.Author
+ORDER BY TimesBorrowed DESC;
+
+6. Update when a book is returned:
+
+-- Mark book as returned
+UPDATE Borrowings 
+SET ReturnDate = GETDATE()
+WHERE MemberID = 1 AND BookID = 1 AND ReturnDate IS NULL;
+
+-- Increase available copies
+UPDATE Books
+SET AvailableCopies = AvailableCopies + 1
+WHERE BookID = 1;
