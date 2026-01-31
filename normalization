@@ -1,0 +1,19 @@
+Real world Example of data without Normalization
+
+Students Table: StudentId, Name, Course1, Course2, Course3, Teacher1, Teacher2, 
+Messy Form 
+
+With Normalization
+Students Table: StudentId, Name
+Courses Table: CourseID, CourseName, Teacher
+Enrollment Table: StudentID, CourseID
+
+Normalization
+1st Normal Form
+2nd Normal Form
+3rd Normal Form
+
+Why Normalization?
+To avoid dataduplication
+Easy updates in Data
+Prevents errors and redundancies
