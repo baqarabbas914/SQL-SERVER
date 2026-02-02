@@ -197,3 +197,65 @@ JOIN Members m ON f.MemberID = m.MemberID
 JOIN Borrowings br ON f.BorrowID = br.BorrowID
 JOIN Books b ON br.BookID = b.BookID
 WHERE f.IsPaid = 0;  -- Unpaid only
+
+2. Calculate total fines per member:
+
+SELECT 
+    m.MemberID,
+    m.FirstName + ' ' + m.LastName AS FullName,
+    COUNT(f.FineID) AS TotalFines,
+    SUM(f.TotalFine) AS TotalAmountOwed,
+    SUM(CASE WHEN f.IsPaid = 0 THEN f.TotalFine ELSE 0 END) AS AmountDue
+FROM Members m
+LEFT JOIN Fines f ON m.MemberID = f.MemberID
+GROUP BY m.MemberID, m.FirstName, m.LastName
+ORDER BY AmountDue DESC;
+
+3. Mark a fine as paid:
+
+UPDATE Fines
+SET IsPaid = 1,
+    PaymentDate = GETDATE()
+WHERE FineID = 1 AND MemberID = 2;
+
+4. Find members who owe > $10:
+
+SELECT 
+    m.FirstName,
+    m.LastName,
+    SUM(f.TotalFine) AS TotalOwed
+FROM Members m
+JOIN Fines f ON m.MemberID = f.MemberID
+WHERE f.IsPaid = 0
+GROUP BY m.MemberID, m.FirstName, m.LastName
+HAVING SUM(f.TotalFine) > 10.00;
+
+💡 BEGINNER-FRIENDLY FINE EXERCISE:
+Instead of complex automation, give them this manual exercise:
+
+-- Exercise: Manual Fine Management
+-- 1. Check which borrowings are late
+SELECT 
+    b.BorrowID,
+    m.FirstName,
+    bk.Title,
+    b.DueDate,
+    GETDATE() AS Today,
+    DATEDIFF(day, b.DueDate, GETDATE()) AS DaysLate
+FROM Borrowings b
+JOIN Members m ON b.MemberID = m.MemberID
+JOIN Books bk ON b.BookID = bk.BookID
+WHERE b.ReturnDate IS NULL 
+AND b.DueDate < GETDATE();
+
+-- 2. Manually add a fine for late return
+INSERT INTO Fines (BorrowID, MemberID, DaysLate, DailyFineRate)
+VALUES (2, 2, 3, 1.00);
+
+-- 3. Check the auto-calculated TotalFine
+SELECT * FROM Fines;
+
+-- 4. Mark it as paid
+UPDATE Fines 
+SET IsPaid = 1, PaymentDate = GETDATE()
+WHERE FineID = 1;
