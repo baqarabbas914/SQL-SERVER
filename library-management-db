@@ -182,3 +182,18 @@ Storage: Uses minimal space (1 bit!)
 
 Step 4: POWERFUL FINE QUERIES
 1. Show all unpaid fines with member details:
+
+SELECT 
+    m.FirstName,
+    m.LastName,
+    m.Email,
+    b.Title AS BookTitle,
+    f.DaysLate,
+    f.DailyFineRate,
+    f.TotalFine,
+    f.FineDate
+FROM Fines f
+JOIN Members m ON f.MemberID = m.MemberID
+JOIN Borrowings br ON f.BorrowID = br.BorrowID
+JOIN Books b ON br.BookID = b.BookID
+WHERE f.IsPaid = 0;  -- Unpaid only
