@@ -122,3 +122,31 @@ WHERE MemberID = 1 AND BookID = 1 AND ReturnDate IS NULL;
 UPDATE Books
 SET AvailableCopies = AvailableCopies + 1
 WHERE BookID = 1;
+
+-- Add to your LibraryDB
+USE LibraryDB;
+
+CREATE TABLE Fines (
+    FineID INT PRIMARY KEY IDENTITY(1,1),
+    BorrowID INT FOREIGN KEY REFERENCES Borrowings(BorrowID),
+    MemberID INT FOREIGN KEY REFERENCES Members(MemberID), -- For quick lookup
+    DaysLate INT NOT NULL,
+    DailyFineRate DECIMAL(5,2) DEFAULT 1.00, -- $1 per day default
+    -- TotalFine DECIMAL(8,2) AS (DaysLate * DailyFineRate), -- CALCULATED COLUMN!
+    TotalFine AS (DaysLate * DailyFineRate) PERSISTED,  -- NO data type here!
+    FineDate DATE DEFAULT GETDATE(),
+    IsPaid BIT DEFAULT 0, -- 0 = unpaid, 1 = paid
+    PaymentDate DATE NULL,
+    
+    CONSTRAINT CHK_DaysLate CHECK (DaysLate >= 0),
+    CONSTRAINT CHK_FineRate CHECK (DailyFineRate > 0)
+);
+
+Step 2: Sample Data & Explanation
+sql
+-- Insert some fines (manually for demo)
+INSERT INTO Fines (BorrowID, MemberID, DaysLate, DailyFineRate)
+VALUES 
+(2, 2, 5, 1.00),   -- 5 days late @ $1/day = $5
+(3, 1, 10, 1.50);  -- 10 days late @ $1.50/day = $15
+-- Note: TotalFine auto-calculates! (5*1=5, 10*1.5=15)
