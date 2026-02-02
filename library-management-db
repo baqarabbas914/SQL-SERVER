@@ -150,3 +150,35 @@ VALUES
 (2, 2, 5, 1.00),   -- 5 days late @ $1/day = $5
 (3, 1, 10, 1.50);  -- 10 days late @ $1.50/day = $15
 -- Note: TotalFine auto-calculates! (5*1=5, 10*1.5=15)
+
+NEW CONCEPTS INTRODUCED:
+
+1. CALCULATED COLUMN (PERSISTED)
+sql
+TotalFine DECIMAL(8,2) AS (DaysLate * DailyFineRate) PERSISTED
+What: Auto-calculates total fine when you insert data
+
+Why: Ensures accuracy, no manual calculation needed
+
+Example: DaysLate=5 × DailyFineRate=1.00 = TotalFine=5.00
+
+2. DECIMAL Data Type for Money
+sql
+DECIMAL(8,2)  -- Total up to 999,999.99
+
+Format: DECIMAL(total_digits, decimal_places)
+
+8,2 = 8 total digits, 2 after decimal → 123456.78
+
+Better for money than FLOAT (avoids rounding errors)
+
+3. BIT for Yes/No Fields
+sql
+IsPaid BIT DEFAULT 0  -- 0 = No, 1 = Yes
+
+Simple toggle: Perfect for status flags
+
+Storage: Uses minimal space (1 bit!)
+
+Step 4: POWERFUL FINE QUERIES
+1. Show all unpaid fines with member details:
