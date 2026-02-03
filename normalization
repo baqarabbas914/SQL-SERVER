@@ -1,11 +1,14 @@
+Normalization
+
 Real world Example of data without Normalization
 
 Students Table: StudentId, Name, Course1, Course2, Course3, Teacher1, Teacher2, 
 Messy Form 
 
 With Normalization
-Students Table: StudentId, Name
-Courses Table: CourseID, CourseName, Teacher
+Students Table: StudentId, StudentName, email.
+Courses Table: CourseID, CourseName  
+Instructor Table: InsId, Teacher
 Enrollment Table: StudentID, CourseID
 
 Normalization
@@ -17,3 +20,71 @@ Why Normalization?
 To avoid dataduplication
 Easy updates in Data
 Prevents errors and redundancies
+
+1st NF - Ensure atomic values and primary key
+
+2nd NF - Meets 1st NF criteria and remove partial dependencies (non key attributes must depend on the whole Primary key)
+
+3 NF Meets 2nd NF criteria and remove transitive dependencies ( non key attributes 
+must not depend on non key coloumn) 
+
+The UnNormalized Data (MessupForm)
+
+CREATE TABLE StudentCourseMess (
+    StudentID INT,
+    StudentName VARCHAR(100),
+    StudentEmail VARCHAR(100),
+    Course1 VARCHAR(100),
+    Course2 VARCHAR(100),
+    Course3 VARCHAR(100),
+    Course1_Instructor VARCHAR(100),
+    Course2_Instructor VARCHAR(100),
+    Course3_Instructor VARCHAR(100),
+    Course1_Credit INT
+    Course1_Credit INT
+);
+
+Sample Data: 
+
+StudentID StudentName Course1 Couerse1_Instructor Course1_Credit Course2  
+
+1	   Alex 	DB101 	   Mr.Laman		4	  Web101 
+2	   Alex		DB101	   Mr Yopusuf		4	  SQL
+3 	   
+      
+FirstNormal Form 1st NF
+
+CREATE TABLE StudentCourses_1NF (
+   StudentID INT,
+   StudentName VARCHAR(100),
+   CourseCode VARCHAR(20),
+   CourseName VARCHAR (100),
+   Instructor VARCHAR (100),
+   Credits INT
+);      
+
+StudentID StudentName CourseCode Instructor Credits 
+
+1           Alex         DB101     Mr LAMAN  4
+1	    Alex	 WEB101    Mr. LAMAN  4
+
+2nd NF Form 
+Partial Dependency 
+
+Already 1NF 
+No Partial Dependencies 
+
+All non key coloumn must entirely depend onPrimary key
+
+
+Let's decompose
+
+Table1 Students 
+
+CREATE TABLE Students (
+  StudentID INT PRIMARY KEY, 
+  StudentName VARCHAR(100),
+  Email VARCHAR(50)
+);
+
+
