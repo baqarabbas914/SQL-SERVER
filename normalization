@@ -87,4 +87,107 @@ CREATE TABLE Students (
   Email VARCHAR(50)
 );
 
+Table2: Courses (CourseInformation depends fully on CourseCode)
+
+CREATE TABLE Courses_2NF (
+  CourseCode VARCHAR(20) PRIMARY KEY,
+  CourseName VARCHAR(100),
+  Instructor VARCHAR(100),
+  Credits INT,
+);
+
+Table3: Enrollments (Junction table,or Bridge table, Join Table, Link)
+
+CREATE TABLE Enrollments_2NF (
+   StudentID INT, 
+   CourseCode VARCHAR(20),
+   EnrollmentDate DATE,
+   PRIMARY KEY (StudentID, CourseCode),
+   FOREIGN KEY (StudentID) REFERENCES Students_2NF(StudentID),
+   FOREIGN KEY (CourseCode) REFERENCES Courses_2NF(CourseCode),
+);
+
+Much Better but ..
+Still there are some issues
+If an instructor teaches 2 courses then their name would repeat in multiple records
+
+In 3 NF we remove transitive dependencies 
+which says
+-> Data should be in 2nd NF
+-> There should be no transitive dependencies - which means no non key attribute must not depend on any other non key attribute.
+
+3NF Normalization 
+
+Un Change Students Table 
+
+CREATE TABLE Students_3NF (
+  StudentID INT PRIMARY KEY, 
+  StudentName VARCHAR(100),
+  Email VARCHAR(50) 
+);
+
+Table 2: Instructors ( New - remove transitive dependency)
+
+CREATE TABLE Instructors_3NF (
+  InstructorID INT PRIMARY KEY,
+  InstructorName VARCHAR(100),
+  OfficeRoom VARCHAR(20),
+  Email VARCHAR(100)
+);
+
+Table 3: Courses (now references instructor)
+
+CREATE TABLE Courses_3NF (
+  CourseCode VARCHAR(20) PRIMARY KEY,
+  CourseName VARCHAR(100),
+  InstructorID INT, -- Changed from instructor name
+  Credits INT,
+  FOREIGN KEY (InstructorID) REFERENCES Instructors_3NF(InstructorID)
+);
+
+
+unchanged Enrollments
+
+CREATE TABLE Enrollments_3NF (
+   StudentID INT, 
+   CourseCode VARCHAR(20),
+   EnrollmentDate DATE,
+   PRIMARY KEY (StudentID, CourseCode),
+   FOREIGN KEY (StudentID) REFERENCES Students_2NF(StudentID),
+   FOREIGN KEY (CourseCode) REFERENCES Courses_2NF(CourseCode),
+);
+
+Visual Progress
+
+Before Normalization 
+
+ONE BIG Table
+Student + Course1 + Course2 +  Course3 + Instructor1 + Instructor2 + .....
+
+Normalization
+
+After 1NF 
+
+One Table:
+
+
+StudentID, StudentName, CourseCode, Instructor, credits
+(Repeats Student name, instructor)
+
+After 2NF 
+
+Tables: 
+
+Students(StudentID, Name, Email)
+Courses(CourseCode, CourseName, Instructor, Credits)
+Enrollments(StudentId, CourseCode, Date)
+Problem: (Instructor still repeated across the courses table)
+
+After 3NF :
+
+Students(StudentID, Name, Email)
+Instructors(InstructorID, Name, Office)
+Courses(CourseCode, CourseName, InstructorID, Credits)
+Enrollments(StudentID, CourseCode, Date)
+
 
